@@ -26,6 +26,46 @@ input{width:100%;font-size:22px;padding:13px 14px;border:1px solid #d7d9dd;borde
 .grid b{font-variant-numeric:tabular-nums}.max{font-size:21px;font-weight:900}.next{margin-top:14px;padding-top:14px;border-top:1px solid #eee}
 .note{font-size:13px;line-height:1.45;color:#777;margin:4px 3px}.tiny{font-size:12px;color:#888;text-align:center;margin-top:14px}
 </style>
+
+<style id="iphone-compact-override">
+@media (max-width: 480px) {
+  html, body { margin:0 !important; padding:0 !important; min-height:100% !important; }
+  body { font-size:12px !important; overflow-x:hidden !important; }
+  .wrap, .container, main {
+    width:100% !important; max-width:100% !important;
+    margin:0 auto !important; padding:6px 8px !important;
+    box-sizing:border-box !important;
+  }
+  h1, .title {
+    font-size:18px !important; line-height:1.15 !important;
+    margin:2px 0 5px !important;
+  }
+  .subtitle, .desc, .description { font-size:10px !important; margin:2px 0 5px !important; line-height:1.2 !important; }
+  .card, .panel, .section, .result, .result-card {
+    padding:7px !important; margin:5px 0 !important;
+    border-radius:10px !important;
+  }
+  label { font-size:10px !important; margin-bottom:2px !important; }
+  input, select, button {
+    min-height:32px !important; height:32px !important;
+    padding:4px 7px !important; font-size:13px !important;
+    border-radius:8px !important; box-sizing:border-box !important;
+  }
+  .mode-buttons button, .segmented button { min-height:30px !important; height:30px !important; }
+  .grid, .inputs, .input-grid {
+    gap:5px !important;
+  }
+  .result-value, .big, .big-result, .status {
+    font-size:20px !important; line-height:1.1 !important;
+    margin:2px 0 !important;
+  }
+  table { font-size:10px !important; line-height:1.1 !important; }
+  th, td { padding:3px 4px !important; }
+  p { margin:3px 0 !important; line-height:1.2 !important; }
+  .footer, footer { margin-top:3px !important; font-size:9px !important; }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
