@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#f4f5f7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="밴딩계산기">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<title>밴딩 각도 계산기</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111;background:#f4f5f7}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;padding:calc(18px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom));background:#f4f5f7}
+.app{max-width:520px;margin:auto}.title{font-size:27px;font-weight:850;margin:6px 2px 16px}
+.card{background:#fff;border-radius:19px;padding:16px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+label{display:block;font-size:14px;font-weight:750;margin:12px 0 6px;color:#444}
+input{width:100%;font-size:22px;padding:13px 14px;border:1px solid #d7d9dd;border-radius:12px;background:#fff}
+.segment{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.segment button{font-size:17px;font-weight:800;padding:13px 8px;border:0;border-radius:12px;background:#eceef2}
+.segment button.on{background:#111;color:#fff}
+.result{text-align:center;padding:21px 10px}.status{font-size:40px;font-weight:950}.ok{color:#16823a}.no{color:#c62828}
+.sub{font-size:15px;color:#666;margin-top:5px}.grid{display:grid;grid-template-columns:1fr auto;gap:11px 14px;font-size:16px;align-items:center}
+.grid b{font-variant-numeric:tabular-nums}.max{font-size:21px;font-weight:900}.next{margin-top:14px;padding-top:14px;border-top:1px solid #eee}
+.note{font-size:13px;line-height:1.45;color:#777;margin:4px 3px}.tiny{font-size:12px;color:#888;text-align:center;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="title">밴딩 각도 계산기</div>
+<div class="card">
+<label>R값 (mm)</label><input id="r" type="number" inputmode="decimal" value="38" step="0.01">
+<label>여유 물림값 (mm)</label><input id="grip" type="number" inputmode="decimal" value="30" step="0.01">
+<label>짧은구간 높이 (mm)</label><input id="h" type="number" inputmode="decimal" value="50" step="0.01">
+<label>밴딩 형태</label>
+<div class="segment"><button id="type90" class="on" type="button">90° + 예각</button><button id="typeOffset" type="button">오프셋</button></div>
+<label>목표 각도 (°)</label><input id="angle" type="number" inputmode="decimal" value="38" min="0.1" max="89.9" step="1">
+</div>
+<div class="card result"><div id="status" class="status">가능</div><div id="modeText" class="sub"></div></div>
+<div class="card">
+<div class="grid">
+<span>대각길이</span><b id="diag">-</b>
+<span id="sb1Label">90° 셋백</span><b id="sb1">-</b>
+<span>두 번째 셋백</span><b id="sb2">-</b>
+<span>셋백 합</span><b id="sum">-</b>
+<span>셋백합 + 여유물림</span><b id="need">-</b>
+<span>남는 길이</span><b id="remain">-</b>
+</div>
+<div class="next"><div class="grid">
+<span class="max">최대 가능각</span><b class="max" id="maxAngle">-</b>
+<span>다음 1°</span><b id="nextCheck">-</b>
+</div></div>
+</div>
+<div class="note">판정 기준: 두 밴딩 셋백 합 + 여유물림 ≤ 대각길이. 오프셋은 입력한 목표각을 양쪽에 동일하게 적용합니다.</div>
+<div class="tiny">입력값은 이 기기에 자동 저장됩니다.</div>
+</div>
+<script>
+let mode=localStorage.getItem("mode")||"90";
+const $=id=>document.getElementById(id), rad=d=>d*Math.PI/180;
+const val=(id,def)=>{const x=parseFloat($(id).value);return Number.isFinite(x)?x:def};
+const fmt=x=>Number.isFinite(x)?x.toFixed(2)+" mm":"-";
+["r","grip","h","angle"].forEach(id=>{const s=localStorage.getItem(id);if(s!==null)$(id).value=s});
+function calcAt(a){
+ const R=val("r",0),g=val("grip",0),h=val("h",0);
+ if(a<=0||a>=90||R<0||h<=0)return null;
+ const diag=h/Math.sin(rad(a)), acute=R*Math.tan(rad(a/2));
+ const first=mode==="90"?R:acute, sum=first+acute, need=sum+g;
+ return {diag,acute,first,sum,need,remain:diag-need,ok:need<=diag};
+}
+function findMax(){
+ let lo=.001,hi=89.999;
+ for(let i=0;i<60;i++){const mid=(lo+hi)/2;if(calcAt(mid)?.ok) lo=mid; else hi=mid}
+ return lo;
+}
+function update(){
+ ["r","grip","h","angle"].forEach(id=>localStorage.setItem(id,$(id).value));localStorage.setItem("mode",mode);
+ $("type90").classList.toggle("on",mode==="90");$("typeOffset").classList.toggle("on",mode==="offset");
+ const a=val("angle",0),c=calcAt(a); if(!c)return;
+ $("status").textContent=c.ok?"가능":"불가능";$("status").className="status "+(c.ok?"ok":"no");
+ $("modeText").textContent=mode==="90"?`90° + ${a}°`:`${a}° + ${a}° 오프셋`;
+ $("diag").textContent=fmt(c.diag);$("sb1Label").textContent=mode==="90"?"90° 셋백":"첫 예각 셋백";
+ $("sb1").textContent=fmt(c.first);$("sb2").textContent=fmt(c.acute);$("sum").textContent=fmt(c.sum);
+ $("need").textContent=fmt(c.need);$("remain").textContent=(c.remain>=0?"+":"")+c.remain.toFixed(2)+" mm";
+ const m=findMax();$("maxAngle").textContent=m.toFixed(2)+"°";
+ const na=Math.min(89.9,a+1),nc=calcAt(na);$("nextCheck").textContent=`${na}° → ${nc&&nc.ok?"가능":"불가능"}`;
+}
+["r","grip","h","angle"].forEach(id=>$(id).addEventListener("input",update));
+$("type90").onclick=()=>{mode="90";update()};$("typeOffset").onclick=()=>{mode="offset";update()};
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
+update();
+</script>
+</body></html>
