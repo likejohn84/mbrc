@@ -1,6 +1,6 @@
 {
-  "name": "밴딩 각도 계산기",
-  "short_name": "밴딩계산기",
+  "name": "밴딩 최소물림값 계산기",
+  "short_name": "최소물림 계산기",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f4f5f7",
